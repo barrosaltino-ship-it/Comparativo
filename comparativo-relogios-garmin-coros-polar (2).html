@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Relógios multiesporte lado a lado: Garmin, Coros e Polar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --water: #EAF3F6; --surface: #FFFFFF; --ink: #142430; --muted: #4E6372;
+  --pool: #17648C; --lane: #D9A21B; --rule: #C9DCE4; --tint: #F3F8FA;
+  --good: #1E7A4E; --weak: #A3452E;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --water: #0C1D27; --surface: #12283A; --ink: #E4EEF2; --muted: #9DB3C0;
+    --pool: #5DB3DB; --lane: #F0C14B; --rule: #24425A; --tint: #163045;
+    --good: #5FCB94; --weak: #F08C72;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --water: #0C1D27; --surface: #12283A; --ink: #E4EEF2; --muted: #9DB3C0;
+  --pool: #5DB3DB; --lane: #F0C14B; --rule: #24425A; --tint: #163045;
+  --good: #5FCB94; --weak: #F08C72;
+  color-scheme: dark;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0; background: var(--water); color: var(--ink);
+  font-family: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 1rem; line-height: 1.5;
+}
+.wrap { max-width: 1600px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+header { max-width: 48rem; margin-bottom: 2rem; }
+h1, h2, h3, th { font-family: "Barlow Condensed", "Arial Narrow", Arial, sans-serif; }
+h1 { font-weight: 700; font-size: clamp(2.2rem, 5.5vw, 3.5rem); line-height: 1; margin: 0 0 0.9rem; }
+header p { color: var(--muted); margin: 0 0 0.5rem; }
+.lanes {
+  height: 6px; margin-top: 1.4rem; max-width: 18rem; border-radius: 3px;
+  background: repeating-linear-gradient(90deg, var(--lane) 0 28px, transparent 28px 40px);
+}
+.hint { font-size: 0.92rem; color: var(--muted); margin: 0 0 0.6rem; }
+.table-box { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 1080px; table-layout: fixed; font-size: 0.8rem; line-height: 1.35; }
+col.label { width: 8.5rem; }
+th, td {
+  padding: 0.5rem 0.5rem; text-align: left; vertical-align: top; overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--rule); border-right: 1px solid var(--rule);
+}
+th:last-child, td:last-child { border-right: none; }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
+thead tr.brand th {
+  font-size: 0.85rem; font-weight: 600; color: var(--muted); text-align: center;
+  background: var(--tint); border-bottom: 1px solid var(--rule);
+}
+thead tr.models th {
+  font-weight: 700; font-size: 0.98rem; line-height: 1.1;
+  background: var(--surface); border-bottom: 3px solid var(--pool);
+}
+thead th small {
+  display: block; font-family: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-weight: 400; font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem;
+}
+tbody th {
+  font-weight: 600; font-size: 0.85rem; color: var(--muted);
+  background: var(--tint); position: sticky; left: 0; z-index: 1;
+}
+thead th:first-child { position: sticky; left: 0; z-index: 2; background: var(--tint); }
+tr.section th, tr.section td { background: var(--tint); }
+td ul { margin: 0; padding-left: 0.9rem; }
+td li { margin-bottom: 0.2rem; }
+td li:last-child { margin-bottom: 0; }
+.yes { color: var(--good); font-weight: 600; }
+.no { color: var(--weak); }
+.pick { background: color-mix(in srgb, var(--lane) 14%, var(--surface)); }
+tr.section td.pick { background: color-mix(in srgb, var(--lane) 18%, var(--tint)); }
+thead tr.models th.pick { border-bottom-color: var(--lane); }
+.badge {
+  display: inline-block; margin-top: 0.35rem;
+  font-family: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 0.65rem; font-weight: 600; padding: 0.05rem 0.45rem; border-radius: 999px;
+  background: var(--lane); color: #1D1A10;
+}
+.badge.alt { background: var(--pool); color: var(--surface); }
+.verdict { margin-top: 3rem; max-width: 54rem; }
+.verdict h2 { font-weight: 700; font-size: 2.2rem; line-height: 1.05; margin: 0 0 0.8rem; }
+.verdict > p { margin: 0 0 1.5rem; color: var(--muted); }
+.rank { list-style: none; padding: 0; margin: 0; counter-reset: r; }
+.rank li {
+  counter-increment: r; display: grid; grid-template-columns: 3rem 1fr;
+  gap: 0.25rem 1rem; padding: 1rem 0; border-top: 1px solid var(--rule);
+}
+.rank li::before {
+  content: counter(r); font-family: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  font-weight: 700; font-size: 2.4rem; line-height: 1; color: var(--pool); grid-row: span 2;
+}
+.rank li:first-child::before { color: var(--lane); }
+.rank h3 { margin: 0; font-weight: 600; font-size: 1.4rem; line-height: 1.15; }
+.rank p { margin: 0; color: var(--muted); }
+.notes { margin-top: 2.5rem; max-width: 54rem; font-size: 0.92rem; color: var(--muted); }
+.notes p { margin: 0 0 0.6rem; }
+@media print {
+  body { background: #fff; }
+  .table-box { overflow: visible; border: none; }
+  table { min-width: 0; font-size: 0.6rem; }
+  @page { size: landscape; margin: 1cm; }
+  tbody th, thead th:first-child { position: static; }
+  .hint { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Relógios multiesporte lado a lado: Garmin, Coros e Polar</h1>
+    <p>Comparativo de novembro de 2026 para triathlon, duathlon, corrida, ciclismo e MTB, natação em piscina e em águas abertas, e academia. Preços de referência nos EUA, em dólares; no Brasil costumam sair bem mais caros.</p>
+    <div class="lanes" aria-hidden="true"></div>
+  </header>
+
+  <p class="hint">No celular, arraste a tabela para o lado para ver todos os modelos.</p>
+  <div class="table-box">
+    <table>
+      <colgroup><col class="label"><col span="9"></colgroup>
+      <thead>
+        <tr class="brand">
+          <th scope="col"></th>
+          <th scope="colgroup" colspan="5">Garmin</th>
+          <th scope="colgroup" colspan="2">Coros</th>
+          <th scope="colgroup" colspan="2">Polar</th>
+        </tr>
+        <tr class="models">
+          <th scope="col"></th>
+          <th scope="col">Forerunner 965<small>2023</small></th>
+          <th scope="col" class="pick">Forerunner 970<small>2025</small><span class="badge">Minha escolha</span></th>
+          <th scope="col">Fenix 7<small>47 mm, 2022</small></th>
+          <th scope="col">Fenix 8 AMOLED<small>47 mm, 2024</small></th>
+          <th scope="col">Fenix 9<small>47 mm, 2026</small></th>
+          <th scope="col">Pace 4<small>Novembro de 2025</small></th>
+          <th scope="col">Pace 4 Pro<small>Setembro de 2026</small><span class="badge alt">Melhor custo</span></th>
+          <th scope="col">Vantage M2<small>2021</small></th>
+          <th scope="col">Vantage M3<small>Outubro de 2024</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Preço (US$)</th>
+          <td>~400–450 em promoção (tabela 599)</td>
+          <td class="pick">749 de tabela, já visto por 649</td>
+          <td>~380–430 em promoção (tabela 649)</td>
+          <td>999 (aço) / 1.099 (titânio e safira), em queda após o Fenix 9</td>
+          <td>A partir de 999</td>
+          <td>249</td>
+          <td>449</td>
+          <td>~210 (modelo antigo)</td>
+          <td>399</td>
+        </tr>
+        <tr>
+          <th scope="row">Tela</th>
+          <td>AMOLED, Gorilla Glass</td>
+          <td class="pick">AMOLED, safira</td>
+          <td>MIP (boa sob sol)</td>
+          <td>AMOLED</td>
+          <td>AMOLED de até 3.000 nits</td>
+          <td>AMOLED 1,2"</td>
+          <td>AMOLED 1,47", 3.500 nits, safira</td>
+          <td>MIP 1,2"</td>
+          <td>AMOLED 1,28", Gorilla Glass 3</td>
+        </tr>
+        <tr>
+          <th scope="row">Tela touch</th>
+          <td class="yes">Sim, com botões</td>
+          <td class="pick yes">Sim, com botões</td>
+          <td class="yes">Sim, com botões</td>
+          <td class="yes">Sim, com botões</td>
+          <td class="yes">Sim, com botões</td>
+          <td class="yes">Sim, com botões</td>
+          <td class="yes">Sim, com botões</td>
+          <td class="no">Não, só botões</td>
+          <td class="yes">Sim, com botões</td>
+        </tr>
+        <tr>
+          <th scope="row">Peso (com pulseira)</th>
+          <td>53 g</td>
+          <td class="pick">56 g</td>
+          <td>79 g em aço, 73 g em titânio</td>
+          <td>73 g em titânio, 80 g em aço</td>
+          <td>75 g</td>
+          <td class="yes">32 g (nylon), 40 g (silicone), o mais leve</td>
+          <td class="yes">43 g (nylon)</td>
+          <td>45 g</td>
+          <td>53 g</td>
+        </tr>
+        <tr>
+          <th scope="row">Bateria smartwatch</th>
+          <td>23 dias</td>
+          <td class="pick">15 dias</td>
+          <td>18 dias</td>
+          <td>16 dias</td>
+          <td>16 dias</td>
+          <td>19 dias</td>
+          <td>21 dias</td>
+          <td>7 dias</td>
+          <td>7 dias</td>
+        </tr>
+        <tr>
+          <th scope="row">Bateria GPS</th>
+          <td>31 h</td>
+          <td class="pick">26 h</td>
+          <td>57 h</td>
+          <td>38 h (todos os satélites)</td>
+          <td>—</td>
+          <td>41 h (todos os satélites)</td>
+          <td>60 h (todos os satélites)</td>
+          <td>—</td>
+          <td>30 h</td>
+        </tr>
+        <tr>
+          <th scope="row">GPS multibanda</th>
+          <td class="yes">Sim (19 h)</td>
+          <td class="pick yes">Sim (21 h)</td>
+          <td class="no">Só na versão Sapphire</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim (31 h)</td>
+          <td class="yes">Sim (40 h)</td>
+          <td class="no">Não</td>
+          <td class="yes">Sim</td>
+        </tr>
+        <tr>
+          <th scope="row">Mapas</th>
+          <td class="yes">Sim</td>
+          <td class="pick yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td>Por atualização recente (beta)</td>
+          <td class="yes">Sim, offline</td>
+          <td class="no">Não</td>
+          <td class="yes">Sim, offline</td>
+        </tr>
+        <tr>
+          <th scope="row">Modo triathlon</th>
+          <td class="yes">Sim</td>
+          <td class="pick yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+        </tr>
+        <tr>
+          <th scope="row">Lanterna</th>
+          <td class="no">Não</td>
+          <td class="pick yes">Sim</td>
+          <td class="no">Não (só 7 Pro e 7X)</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td class="no">Não</td>
+          <td>—</td>
+          <td class="no">Não</td>
+          <td>Só pela tela</td>
+        </tr>
+        <tr>
+          <th scope="row">Triathlon Coach</th>
+          <td class="no">Não</td>
+          <td class="pick yes">Sim</td>
+          <td class="no">Não</td>
+          <td class="yes">Sim</td>
+          <td class="yes">Sim</td>
+          <td colspan="2">Planos de treino próprios da Coros</td>
+          <td colspan="2">Planos de treino próprios da Polar</td>
+        </tr>
+        <tr>
+          <th scope="row">Armazenamento</th>
+          <td>32 GB</td>
+          <td class="pick">32 GB</td>
+          <td>—</td>
+          <td>32 GB</td>
+          <td>64 GB</td>
+          <td>4 GB</td>
+          <td>32 GB</td>
+          <td>—</td>
+          <td>32 GB</td>
+        </tr>
+        <tr>
+          <th scope="row">Resistência à água</th>
+          <td>5 ATM</td>
+          <td class="pick">5 ATM</td>
+          <td>10 ATM</td>
+          <td>10 ATM</td>
+          <td>10 ATM</td>
+          <td>5 ATM</td>
+          <td>5 ATM</td>
+          <td>WR30</td>
+          <td>WR50</td>
+        </tr>
+        <tr class="section">
+          <th scope="row">O que se destaca</th>
+          <td><ul><li>Melhor custo-benefício da Garmin</li><li>Bateria de 23 dias</li><li>Leve e completo para triathlon</li></ul></td>
+          <td class="pick"><ul><li>Queridinho dos triatletas</li><li>ECG, safira e lanterna</li><li>GPS muito preciso</li></ul></td>
+          <td><ul><li>Fenix barato</li><li>57 h de GPS por pouco</li><li>Tela MIP legível sob sol</li></ul></td>
+          <td><ul><li>Caixa robusta e botões à prova de vazamento, bom para MTB</li><li>Mesma tela de 1,4" do 51 mm, com corpo menor</li><li>Recebe funções do Fenix 9</li></ul></td>
+          <td><ul><li>O mais novo da Garmin</li><li>Tela mais brilhante</li><li>64 GB de armazenamento</li></ul></td>
+          <td><ul><li>Venceu Kona 2026 no pulso de Vincent Luis</li><li>Levíssimo: 32 g</li><li>Muito barato para o que entrega</li></ul></td>
+          <td><ul><li>60 h de GPS e mapas por US$ 449</li><li>Tela grande e muito brilhante</li><li>Titânio e safira com só 43 g</li></ul></td>
+          <td><ul><li>Muito barato hoje</li><li>Leve e simples</li></ul></td>
+          <td><ul><li>Mapas e multibanda por US$ 399</li><li>Boas métricas de recuperação</li><li>Compacto: 44 mm</li></ul></td>
+        </tr>
+        <tr class="section">
+          <th scope="row">Pontos fracos</th>
+          <td><ul><li>Sem lanterna, ECG e Triathlon Coach</li><li>Atualizações futuras não garantidas</li></ul></td>
+          <td class="pick"><ul><li>15 dias de bateria, menos que o 965</li><li>Caro perto do 965 em promoção</li></ul></td>
+          <td><ul><li>Modelo antigo</li><li>Versão básica sem multibanda</li></ul></td>
+          <td><ul><li>Mais caro e mais pesado que o Forerunner 970</li><li>Bateria parecida com a do 970</li></ul></td>
+          <td><ul><li>O mais caro de todos</li><li>GPS pior que o do 970 em teste</li></ul></td>
+          <td><ul><li>Só 4 GB de armazenamento</li><li>App e ecossistema menos completos que os da Garmin</li></ul></td>
+          <td><ul><li>App menos completo que o Garmin Connect</li><li>Menos integração com sensores e apps</li></ul></td>
+          <td><ul><li>Desatualizado: sem touch, mapas e multibanda</li><li>Pouca bateria e só WR30</li></ul></td>
+          <td><ul><li>Bateria curta: 7 dias</li><li>Menos popular, menos acessórios e apps</li></ul></td>
+        </tr>
+        <tr class="section">
+          <th scope="row">Ideal para</th>
+          <td>Máximo pelo menor preço na Garmin</td>
+          <td class="pick">Triathlon, MTB e academia no dia a dia</td>
+          <td>Bateria longa gastando pouco</td>
+          <td>Quem quer robustez de Fenix sem relógio enorme</td>
+          <td>Quem quer o mais novo</td>
+          <td>Competir leve gastando pouco</td>
+          <td>Alternativa à Garmin com muita bateria</td>
+          <td>Não recomendado hoje</td>
+          <td>Quem prefere o ecossistema Polar</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="verdict">
+    <h2>Minha sugestão</h2>
+    <p>Como você não precisa de bateria para vários dias seguidos, o Fenix de 51 mm deixa de fazer sentido. Para triathlon, duathlon, MTB, natação e academia no dia a dia, a ordem de prioridade é esta:</p>
+    <ol class="rank">
+      <li><h3>Forerunner 970</h3><p>Praticamente as mesmas funções do Fenix 8, incluindo mapas, lanterna e Triathlon Coach, com 56 g e preço menor. É o queridinho dos triatletas e o melhor equilíbrio para o seu uso.</p></li>
+      <li><h3>Fenix 8 AMOLED 47 mm em titânio com safira, com desconto</h3><p>Vale se você quer a robustez do Fenix para quedas no MTB, caixa de metal e 10 ATM. Pesa 73 g em titânio e tem bateria um pouco maior que a do 970.</p></li>
+      <li><h3>Coros Pace 4 Pro</h3><p>60 h de GPS, mapas, safira e titânio com apenas 43 g, por US$ 449. A melhor alternativa se você não faz questão do ecossistema Garmin.</p></li>
+      <li><h3>Forerunner 965 em promoção</h3><p>Entrega tudo que o triathlon exige por bem menos, dentro do ecossistema Garmin. Ótima compra na Black Friday.</p></li>
+      <li><h3>Coros Pace 4</h3><p>Para competir leve e gastar pouco. O campeão de Kona 2026 usou um.</p></li>
+      <li><h3>Polar Vantage M3</h3><p>Boa opção intermediária com mapas e multibanda, mas a bateria de 7 dias fica abaixo da concorrência.</p></li>
+      <li><h3>Fenix 9 47 mm</h3><p>Mesma bateria do Fenix 8 47 mm. Só compensa se a diferença de preço for pequena.</p></li>
+      <li><h3>Fenix 7 e Polar Vantage M2</h3><p>Modelos envelhecidos. O Fenix 7 só vale na versão Pro Sapphire muito barata; o Vantage M2 eu evitaria.</p></li>
+    </ol>
+  </section>
+
+  <div class="notes">
+    <p>Dica: para natação e musculação, use uma cinta peitoral. O sensor de pulso erra bastante nessas atividades.</p>
+    <p>A Coros mede a bateria de GPS com todos os satélites ativos e a Garmin com GPS simples, então os números não são diretamente comparáveis. Bateria conforme fabricantes e reviews; o uso real varia com brilho de tela, sensores e música. “—” indica dado não confirmado nas fontes consultadas.</p>
+    <p>Fontes: the5krunner, Tom’s Guide, T3, BikeRadar, Wareable, 220 Triathlon, DC Rainmaker, thewearify, PhoneArena, Coach, Mighty Gadget, PlayBetter e outros reviews especializados.</p>
+  </div>
+</div>
+</body>
+</html>
